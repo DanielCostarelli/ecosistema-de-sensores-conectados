@@ -9,4 +9,5 @@ Atualmente os dispositivos previstos são/fazem:
 * Monitorar o consumo e a qualidade energética da minha residência, das 2 fases.
 * Monitorar o consumo e a qualidade energética gasta por um aparelho/eletrodoméstico específico.
 * Monitorar o clima na fazenda, com sensores de temperatura, umidade, preciptação, vento, luminosidade, qualidade do ar e pressão atmosférica.
+
 Todos esses e mais outros dispositivos contribuirão para um banco de dados, que será utilizado para tomar decisões na automatização de tarefas.
