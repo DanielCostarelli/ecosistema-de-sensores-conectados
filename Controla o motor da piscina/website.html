@@ -245,72 +245,90 @@
             gap: 15px 5px;
         }
 
-        
-        @media (min-width: 2900px) {                                /* 6 colunas para telas maiores */
+
+        @media (min-width: 2900px) {
+
+            /* 6 colunas para telas maiores */
             #colunas_checkbox {
                 grid-template-columns: repeat(6, 1fr);
             }
         }
 
 
-        @media (max-width: 2900px) and (min-width: 2400px) {        /* 5 colunas para telas médias */
+        @media (max-width: 2900px) and (min-width: 2400px) {
+
+            /* 5 colunas para telas médias */
             #colunas_checkbox {
                 grid-template-columns: repeat(5, 1fr);
             }
         }
-        
 
-        @media (max-width: 2400px) and (min-width: 1700px) {        /* 4 colunas para telas médias */
+
+        @media (max-width: 2400px) and (min-width: 1700px) {
+
+            /* 4 colunas para telas médias */
             #colunas_checkbox {
                 grid-template-columns: repeat(4, 1fr);
             }
         }
 
 
-        @media (max-width: 1700px) and (min-width: 1300px) {        /* 3 colunas para telas médias */
+        @media (max-width: 1700px) and (min-width: 1300px) {
+
+            /* 3 colunas para telas médias */
             #colunas_checkbox {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
 
-        @media (max-width: 1300px) and (min-width: 860px) {         /* 2 colunas para telas menores */
+        @media (max-width: 1300px) and (min-width: 860px) {
+
+            /* 2 colunas para telas menores */
             #colunas_checkbox {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
 
-        @media (max-width: 860px) and (min-width: 420px) {         /* 2 colunas para telas menores */
+        @media (max-width: 860px) and (min-width: 420px) {
+
+            /* 2 colunas para telas menores */
             #colunas_checkbox {
                 grid-template-columns: 1fr;
             }
         }
 
 
-        @media (max-width: 420px) {                                 /* 1 coluna para telas pequenas (mobile) */
+        @media (max-width: 420px) {
+
+            /* 1 coluna para telas pequenas (mobile) */
             #colunas_checkbox {
                 grid-template-columns: 1fr;
                 scale: 0.8;
                 margin: -300px 280px 0 0;
             }
+
             p {
                 font-size: 12px;
             }
+
             .subtitulo {
                 font-size: 12px;
             }
+
             .titulo {
                 font-size: 15px;
             }
+
             .bloco {
                 width: 83vw;
             }
+
             .espaco_de_checkbox {
                 height: 2700px;
             }
         }
-
     </style>
 </head>
 
@@ -382,7 +400,6 @@
 
 
     <script>
-
         function criar_checkboxes() {
             var horarios = gerar_horarios();
 
