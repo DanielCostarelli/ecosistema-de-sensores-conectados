@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlar o motor da piscina</title>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.6.0/Control.FullScreen.min.js"></script>
+
+
+
+
+    <style>
+        body {
+            width: 99vw;
+            font-family: Arial, sans-serif;
+            display: flex;
+            background-color: #f2f2f2;
+            margin: 0;
+            justify-content: center;
+            position: absolute;
+            top: 40px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bloco {
+            display: flex;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            flex-direction: column;
+            border: 1px solid #00000024;
+            width: 87vw;
+        }
+
+        .aviso {
+            background-color: #eaeaf5;
+        }
+
+        .titulo {
+            font-size: 20px;
+            margin-top: 15px;
+            color: #164467;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitulo {
+            font-size: 16px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .cadastro {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .linha {
+            display: flex;
+            width: 100%;
+        }
+
+        .espaco_de_checkbox .linha {
+            display: flex;
+            width: 100%;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .linha_botoes {
+            display: flex;
+            width: 100%;
+            margin-top: 20px;
+            justify-content: space-evenly;
+        }
+
+        .conjunto_horas {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conjunto_1_hora {
+            display: flex;
+            justify-content: space-evenly;
+            /* gap: 3px; */
+            background-color: #fcfcfc;
+            padding: 23px 3px 3px 3px;
+            border-radius: 10px;
+            border: 1px solid #dcdcdc;
+        }
+
+        .conjunto_checkbox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #e2e2e2;
+            border-radius: 6px;
+            width: 90px;
+            padding: 6px 0 0 0;
+        }
+
+
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+            transition: all 0.1s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border: 1px solid #000000a1;
+        }
+
+
+        input[type="checkbox"] {
+            /* Estilo padrão do checkbox */
+            appearance: none;
+            width: 50px;
+            height: 50px;
+            margin-top: 0;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input[type="checkbox"]::before {
+            /* Marcador do checkbox */
+            content: "";
+            width: 0%;
+            height: 100%;
+            background-image: url('https://www.ngi.com.br/wp-content/uploads/Quadrado-azul-escuro.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            transition: width 0.17s ease-out;
+            filter: brightness(0.5);
+        }
+
+        input[type="checkbox"]:checked::before {
+            /* Marcador do checkbox quando marcado */
+            width: 85%;
+            filter: brightness(1.5);
+        }
+
+        p {
+            color: #434343;
+            font-size: 15px;
+            margin-left: 10px;
+        }
+
+        .aviso p {
+            margin: 5px 10px 5px 0;
+        }
+
+        .conjunto_checkbox p {
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .conjunto_horas span {
+            font-size: 14px;
+            font-weight: bolder;
+            position: relative;
+            top: 21px;
+            text-align: center;
+        }
+
+        button {
+            width: 200px;
+            padding: 7px;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+
+
+        .salvar {
+            background-color: #20567f;
+        }
+
+        .salvar:active {
+            background-color: #164467;
+        }
+
+
+
+        .progress_container {
+            width: 100%;
+            background-color: #20567f;
+            border-radius: 7px;
+            overflow: hidden;
+            margin: 15px 0 0 0;
+            height: 20px;
+            border: 1px solid #dededec4;
+        }
+
+        .progress_bar {
+            width: 0%;
+            height: 100%;
+            background-color: #d3d3d3;
+            text-align: center;
+            line-height: 20px;
+            color: black;
+            font-weight: bold;
+            transition: width 0.5s;
+            font-size: 13px;
+        }
+
+
+
+
+        #colunas_checkbox {
+            display: grid;
+            gap: 15px 5px;
+        }
+
+        
+        @media (min-width: 2900px) {                                /* 6 colunas para telas maiores */
+            #colunas_checkbox {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+
+        @media (max-width: 2900px) and (min-width: 2400px) {        /* 5 colunas para telas médias */
+            #colunas_checkbox {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+
+        @media (max-width: 2400px) and (min-width: 1700px) {        /* 4 colunas para telas médias */
+            #colunas_checkbox {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+
+        @media (max-width: 1700px) and (min-width: 1300px) {        /* 3 colunas para telas médias */
+            #colunas_checkbox {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+
+        @media (max-width: 1300px) and (min-width: 860px) {         /* 2 colunas para telas menores */
+            #colunas_checkbox {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+
+        @media (max-width: 860px) and (min-width: 420px) {         /* 2 colunas para telas menores */
+            #colunas_checkbox {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        @media (max-width: 420px) {                                 /* 1 coluna para telas pequenas (mobile) */
+            #colunas_checkbox {
+                grid-template-columns: 1fr;
+                scale: 0.8;
+                margin: -300px 280px 0 0;
+            }
+            p {
+                font-size: 12px;
+            }
+            .subtitulo {
+                font-size: 12px;
+            }
+            .titulo {
+                font-size: 15px;
+            }
+            .bloco {
+                width: 83vw;
+            }
+            .espaco_de_checkbox {
+                height: 2700px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+    <div class="container" id="container1">
+
+        <div class="bloco aviso">
+            <p>Clique nos botões abaixo para escolher o horário de ligar e desligar.</p>
+            <p>Depois clique em Salvar alteração, e espere o ESP se conectar com a internet.</p>
+            <p id="contagem_regressiva">Essa página recarrega sozinho a cada 2 minutos. Tempo até reiniciar:</p>
+            <div class="progress_container">
+                <div class="progress_bar" id="progress_bar">0%</div>
+            </div>
+        </div>
+
+
+
+        <!-- Input -->
+        <div class="bloco" style="margin-bottom: 80px;">
+
+            <div class="cadastro">
+                <form id="form" style="
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                    ">
+
+                    <div class="titulo">CONTROLE DO MOTOR DA PISCINA</div>
+                    <div class="linha">
+                        <div class="subtitulo">Ultimo acesso do ESP com a internet:</div>
+                        <p id="ultimo_acesso"></p>
+                    </div>
+                    <div class="linha">
+                        <div class="subtitulo">Estado atual do motor da piscina:</div>
+                        <p id="status"></p>
+                    </div>
+                    <div class="subtitulo">Controlar o horário de funcionamento:</div>
+                    <div class="espaco_de_checkbox" id="espaco_de_checkbox"></div>
+
+
+
+
+                    <div class="linha_botoes"></div>
+                    <div class="linha_botoes"></div>
+                    <div class="linha_botoes" style="justify-content: center; gap: 10px;">
+                        <button class="salvar" onclick="salvar()" type="button">Salvar alteração</button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+
+    <script>
+
+        function criar_checkboxes() {
+            var horarios = gerar_horarios();
+
+            var contagem = 0;
+            var contagem2 = 0;
+            var html = '';
+            for (let i = 0; i < 24; i++) {
+                html += '<div class="conjunto_horas">';
+                html += `<span>${String(contagem2).padStart(2, '0')}:00 horas</span>`;
+                html += '<div class="conjunto_1_hora">';
+                for (let j = 0; j < 4; j++) {
+                    html += `<div id="conjunto_checkbox_${contagem}" class="conjunto_checkbox">
+                        <p>${horarios[contagem]}</p>
+                        <input type="checkbox" id="checkbox_${contagem}" title="Ligar/Desligar motor durante ${horarios[contagem]} horas">
+                    </div>`;
+                    contagem++;
+                }
+                contagem2++;
+                html += '</div>';
+                html += '</div>';
+            }
+
+            var checkboxes = document.createElement('div');
+            checkboxes.innerHTML = html;
+            checkboxes.id = 'colunas_checkbox';
+            document.getElementById('espaco_de_checkbox').appendChild(checkboxes);
+        }
+
+
+
+
+
+
+
+        window.onload = function () {
+            criar_checkboxes();
+            recebe_json_armazenado();
+        };
+
+
+
+
+
+
+        function recebe_json_armazenado() {
+            fetch('retorna_ao_site.php')
+                .then(response => response.json())
+                .then(data => {
+                    status = data.status;
+                    ano = data.ano;
+                    nome_do_mes = data.nome_do_mes;
+                    dia = data.dia;
+                    hora = data.hora;
+                    minuto = data.minuto;
+                    segundo = data.segundo;
+                    inputs = data.inputs;
+
+                    document.getElementById('ultimo_acesso').textContent = `${hora}:${minuto}:${segundo} - ${dia} de ${nome_do_mes} de ${ano}`;
+                    document.getElementById('status').textContent = status;
+
+                    for (let i = 0; i < 96; i++) {
+                        const checkbox = document.getElementById(`checkbox_${i}`);
+                        const parentDiv = document.getElementById(`conjunto_checkbox_${i}`);
+
+                        if (inputs[i] === 1) {
+                            checkbox.checked = true;
+                            parentDiv.style.backgroundColor = "#7ab7ec30";
+                            checkbox.style.backgroundColor = "#7ab7ec30";
+                        } else if (inputs[i] === 0) {
+                            checkbox.checked = false;
+                            parentDiv.style.backgroundColor = "#00000000";
+                            checkbox.style.backgroundColor = "#ffffff";
+                        }
+                    }
+
+                    console.log("Input recebido:", inputs);
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+
+
+        function salvar() {
+            var array_checkboxes = [];
+            for (let i = 0; i < 96; i++) {
+                var check = document.getElementById(`checkbox_${i}`).checked;
+                if (check) {
+                    array_checkboxes.push(1);
+                } else {
+                    array_checkboxes.push(0);
+                }
+            }
+            console.log("Input enviado:", array_checkboxes);
+
+
+
+            if (array_checkboxes) {
+                fetch('grava_alteracoes.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `inputs=${array_checkboxes}`
+                })
+                    .then(response => response.text())
+                    .then(data => console.log('Valor enviado com sucesso:', data))
+                    .then(data => alert('Valor enviado com sucesso'))
+                    .catch(error => console.error('Erro ao enviar o valor:', error));
+            } else {
+                console.error('Input não reconhecido.');
+            }
+        }
+
+
+
+
+
+        const progress_bar = document.getElementById('progress_bar');
+        const contagem_regressiva = document.getElementById('contagem_regressiva');
+        const totalTime = 120; // Tempo total em segundos
+        const intervalTime = 100; // Intervalo de atualização em milissegundos
+        const totalSteps = totalTime * (1000 / intervalTime); // Total de passos para completar
+        let progress = 0; // Progresso inicial
+
+        function barra_de_progresso() {
+            if (progress < 100) {
+                progress += 100 / totalSteps;
+                const remainingTime = (totalTime - (progress * totalTime) / 100).toFixed(0); // Tempo restante
+                progress_bar.style.width = progress + '%';
+                progress_bar.textContent = `${remainingTime} segundos`;
+                contagem_regressiva.textContent = `Essa página recarrega sozinho a cada 2 minutos. Tempo até reiniciar: ${remainingTime} segundos.`;
+            } else {
+                clearInterval(interval);
+                contagem_regressiva.textContent = "Recarregando...";
+                location.reload(); // Recarrega a página
+            }
+        }
+
+        // Atualiza o progresso a cada 100 ms
+        const interval = setInterval(barra_de_progresso, intervalTime);
+
+
+
+
+
+
+
+        function gerar_horarios() {
+            const horarios = [];
+            let hora = 0;
+            let minuto = 0;
+
+            for (let i = 0; i < 96; i++) {
+                const inicio = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+                minuto += 15;
+                if (minuto === 60) {
+                    minuto = 0;
+                    hora++;
+                }
+                if (hora === 24) {
+                    hora = 0;
+                }
+                const fim = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+                horarios.push(`${inicio} / ${fim}`);
+            }
+
+            return horarios;
+        }
+
+
+
+
+
+
+
+
+
+
+        // ao clicar em qualquer dos checkbox, ele altera a cor do fundo
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.body;
+            container.addEventListener('change', (event) => {
+                if (event.target && event.target.id.startsWith('checkbox_')) {
+                    const checkbox = event.target;
+                    const checkboxIndex = checkbox.id.split('_')[1]; // Extrai o índice do ID (ex: '0', '1', ..., '95')
+                    const parentDiv = document.getElementById('conjunto_checkbox_' + checkboxIndex); // O contêiner do checkbox
+
+                    if (checkbox.checked) {
+                        parentDiv.style.backgroundColor = "#7ab7ec30";
+                        checkbox.style.backgroundColor = "#7ab7ec30";
+                    } else {
+                        parentDiv.style.backgroundColor = "#00000000";
+                        checkbox.style.backgroundColor = "#ffffff";
+                    }
+                }
+            });
+        });
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
