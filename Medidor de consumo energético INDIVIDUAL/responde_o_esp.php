@@ -7,7 +7,7 @@
 // se a senha for correta:
 // recebe o conteudo e decompoe em variaveis para cada informação...
 // 
-// abre o Registro.json e decompoe cada objeto e array em uma variavel
+// abre o Registro.json e decompoe cada chave e array em uma variavel
 // acrescenta/append o valor recem recebido do esp ao fim do array da variavel de registro
 // forma um novo objeto formatado identico ao do Registro.json, mas com novas medições adicionadas ao fim dos arrays, 
 // sobreescreve o Registro.json
@@ -15,43 +15,14 @@
 // acessa um php que obtem e informa a data e hora
 // retorna a data e hora ao esp
 //
+// ele verifica se o registro.json esta corrompido (ja aconteceu diversas vezes dele inserir um '}' a mais ou remover a '}' final do objeto, deixando incapaz de ser lido).
+// se houver 2 chaves no fim, ele remove uma e salva.
+// se houver nenhuma chave no fim, ele acrescenta uma e salva.
+//
 
 
 
 
-
-
-///////////////  MUDANÇAS:
-// removi a variavel $status_ e mais algumas.
-// adicionei a verificação de status aqui no php, e se houver potencia ou corrente é ligado.
-// o $status do JSON recebe essa variavel, que agora é criada aqui, e nao trazida do esp.
-// trouxe/movi o codigo que importa a data e hora para cima, logo após verificar a senha.
-// adicionei no json de registro:                  (onde cada indice é um momento) (o item tensão[123] pertence a medição junto com corrente[123], no tempo hora[123] minuto[123] e segundo[123])   
-    // "data_e_hora": {
-    //     "ano": [],
-    //     "mes": [],
-    //     "dia": [],
-    //     "hora": [],
-    //     "minuto": [],
-    //     "segundo": [],
-    //     "dia_da_semana": [],
-    //     "nome_do_mes": []
-    // },
-// agora junto com a recepção do sensor do esp, é recebido a data e hora, não sendo necessário receber data e hora do esp.
-// os valores de tempo a serem armazenados no json partirão desses aqui.
-// cada vez que é executado, ele add o tempo no json.
-// MUDAR EM TODOS OS PHP O FORMATO De recepção do JSON
-// apaguei o objeto 'gastos_de_hoje' do JSON, pois não é algo que é armazenado, é apenas atualizado, e pode ser verificado entre JS e PHP.
-// para determinar gastos_de_hoje, o JS do site assim que onload.window, e cada vez que atualiza, faz uma função que deve acessar um novo php, chamado Gastos_Consumo_de_hoje.php.  Nesse novo php ele acessa a data e hora atual, e puxa o objeto do json, e na data e hora do json ele filtra para encontrar os indices que correspondem a data de desde 00h até a hora atual.  e então usar esse indice (o indice das 00h e o indice da ultima leitura do dia de hoje) para pegar o consumo de energia do ultimo indice menos o consumo do primeiro indice. E também ele vê quantas horas dá, e retorna um array tipo  [0.92, "04:11"]. E então o JS recebe e exibe na tela no html.
-
-
-
-
-///////////// MUDAR NO ESP:
-// remover/tirar o codigo de teste de status para determinar se ta ligado ou desligado.
-// remover/tirar o status da lista de envio ao url, pois nao recebe mais e daria confusão.
-// remover/tirar a parte que envia a data ao php. tirando totalmente da lista de envio da url.  (receber pode, e ainda vai, mas é opcional, pois só serve para imprimir)
-// no array de envio da URL deve estar assim:   [tensao, corrente, potencia, energia, frequencia, fp],   onde ele envia apenas os dados dos sensores, e o backend quem se resolve a idenificar e separar as coisas.
 
 
 
@@ -113,9 +84,8 @@ if (isset($_GET['key'])) {                                  // Verifica se a var
             $frequencia_ = $valores[4];
             $fp_ = $valores[5];
 
-            if (((float)$potencia_ >= 2.0  ||  ((float)$corrente_ >= 0.1) && (float)$fp_ >= 0.9)) { $status_ = "Ligado"; }
+            if (((float)$corrente_ >= 0.1  ||  ((float)$potencia_ >= 0.1)) && (float)$fp_ <= 0.8) { $status_ = "Ligado"; }
             else { $status_ = "Desligado"; }
-
 
 
             
@@ -126,12 +96,6 @@ if (isset($_GET['key'])) {                                  // Verifica se a var
             $arquivo = "Registro.json";                     // Caminho do arquivo onde o conteúdo esta armazenado
             $conteudo = file_get_contents($arquivo);        // Lê o conteúdo do arquivo
 
-            // Garante que há apenas 1 '}' no final
-            $conteudo = rtrim($conteudo); // Remove espaços em branco e novas linhas do final
-            while (substr($conteudo, -1) === '}') {
-                $conteudo = substr($conteudo, 0, -1); // Remove o último caractere '}'
-            }
-            $conteudo .= '}'; // Adiciona um único '}' no final
 
 
 
@@ -245,14 +209,6 @@ if (isset($_GET['key'])) {                                  // Verifica se a var
 
 
 
-                // Garante que há apenas 1 '}' no final:
-                $novo_conteudo_json = rtrim($novo_conteudo_json); // Remove espaços em branco e novas linhas do final
-                while (substr($novo_conteudo_json, -1) === '}') {
-                    $novo_conteudo_json = substr($novo_conteudo_json, 0, -1); // Remove o último caractere
-                }
-                $novo_conteudo_json .= '}'; // Adiciona um único '}' no final
-
-
 
 
                 // Abre o arquivo em modo de escrita para sobrescrever o conteúdo
@@ -269,6 +225,27 @@ if (isset($_GET['key'])) {                                  // Verifica se a var
 
             } else {
                 echo "Erro ao decodificar JSON: " . json_last_error_msg();
+                // se o arquivo lido não é um Objeto válido (JSON): tratar ele como string e ver a quantidade de chaves no final.
+                
+                $conteudo_limpo = preg_replace('/\s+/', '', $conteudo);                 // Transforma o conteudo de Registro.json em string, e remove os espaços e quebra de linha.
+                $ultimos_caracteres = substr($conteudo_limpo, -40);                     // Pega os últimos 40 caracteres para análise
+
+                if (substr($ultimos_caracteres, -2) === '}}') {                         // Se termina com '}}':
+                    $conteudo_limpo = substr($conteudo_limpo, 0, -1);                   // Remove o último '}'
+                } else {                                                                // Se não:
+                    $conteudo_limpo .= '}';                                             // Adiciona um '}'
+                }
+
+                $objeto = json_decode($conteudo_limpo, true);                           // Tenta decodificar novamente
+                $objeto_final = json_encode($objeto, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+                if (file_put_contents($arquivo, $objeto_final) !== false) {             // Salva o JSON formatado no arquivo
+                    echo 'Conteúdo salvo com sucesso';
+                } else {
+                    echo "Erro ao salvar o arquivo.";
+                }
+
+                
             }
 
 
