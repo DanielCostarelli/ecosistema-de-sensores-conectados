@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Energia</title>
+    <style>
+        /* Fonte importada do Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        /* Background geral */
+        body {
+            background: url('https://monitoramento.x10.bz/Medidor_PZEM/Modelo_da_Tati/cubes.png');
+            background-color: #b4c3de;
+            color: #000000;
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Efeito de vidro */
+
+
+        /* Estilo dos gráficos */
+        .linha {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            height: 450px;
+            flex-direction: column;
+        }
+
+        .linha>div {
+            flex: 1 1 45%;
+            margin: 10px;
+            min-width: 300px;
+            height: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff64;
+            border-radius: 25px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            backdrop-filter: blur(7px);
+            transition: all 0.1s ease;
+        }
+
+        .linha>div:hover {
+            background: #ffffff80;
+        }
+
+
+
+
+        .botao {
+            padding: 5px;
+            color: #e2e2e2;
+            background-color: #000b2edd;
+            font-weight: bold;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        .botao:hover {
+            scale: 1.02;
+            background-color: #00001d;
+        }
+
+        .destaque_p {
+            padding: 7px;
+            background-color: #0400330f;
+            border: 1px solid #000b3f2b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .voltar {
+            font-size: 1.1rem;
+            font-weight: bolder;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 15px;
+            border: 1px solid #ffffff33;
+            background-color: #ffffff64;
+            border-radius: 20px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(7px);
+            margin-bottom: 70px;
+            width: 140px;
+        }
+
+        .voltar:hover {
+            background-color: #ffffff82;
+            scale: 1.05;
+        }
+
+        input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1.0rem;
+            padding-left: 15px;
+            padding-right: 15px;
+            width: 30%;
+        }
+
+        .p_valor_kwh {
+            width: 250px;
+            font-size: 1rem;
+            padding: 7px;
+            background-color: #0400330f;
+            border: 1px solid #000b3f2b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="voltar" title="Voltar à página anterior" onclick="voltar_a_pagina()">VOLTAR</div>
+
+
+
+    <div class="linha" style="height: 50px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span>Valor do kWh unitário:</span>
+            <input type="text" id="valor_kwh_unitario" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" />
+            <div class="botao" onclick="alterar_valor_kwh_unitario()" style="width: 30%;">Alterar valor</div>
+            <p class="p_valor_kwh" id="valor_kwh_unitario_"></p>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div class="linha">
+        <div>
+            <p>Status: <span id="status">Desconhecido</span></p>
+            <p>Hora: <span id="hora">--:--:--</span></p>
+            <p class="destaque_p">Consumo até o momento: <span id="consumo_ate_o_momento" style="margin-top: 8px;"></span></p>
+            <p class="destaque_p">Hoje: <span id="consumo_hoje" style="margin-top: 8px;"></span></p>
+        </div>
+
+        <div>
+            <table id="consumption-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #0400330f;">
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">MÊS</th>
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">CONSUMO (kWh)</th>
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">DIAS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <div class="botao" onclick="resetar_leitura()">Reiniciar leitura</div>
+        </div>
+    </div>
+
+
+
+    <div class="linha">
+        <div>
+            <table id="energy-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #0400330f;">
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">DIA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">ENERGIA
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">CUSTO</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">HORAS LIG.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <script>
+        const labels = Array.from({ length: 300 }, (_, i) => i + 1);
+
+        var valor_kwh_unitario;
+        var Consumo_ate_o_momento;
+
+        var consumo_hoje;
+        var horas_ligadas_hoje;
+
+        function recebe_consumo_de_hoje() {
+            fetch('Gastos_Consumo_de_hoje.php')
+                .then(response => response.json())
+                .then(data => {
+                    consumo_hoje = data.consumo_hoje;
+                    horas_ligadas_hoje = data.horas_ligado;
+
+                    document.getElementById('consumo_hoje').innerHTML = `${consumo_hoje.toFixed(2)} kWh<br>R$${(consumo_hoje * parseFloat(preco_unitario_kwh)).toFixed(2)}<br>${horas_ligadas_hoje} horas`;
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+
+
+
+        var preco_unitario_kwh;
+        function fetchData() {
+            fetch('retorna_ao_site.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    var energia = data.energia;
+                    var status = data.status;
+                    preco_unitario_kwh = data.preco_unitario_kwh;
+                    document.getElementById('status').textContent = status;
+
+                    console.log(parseFloat(energia[energia.length-1]));
+                    console.log((preco_unitario_kwh));
+                    console.log((parseFloat(energia[energia.length-1]) * parseFloat(preco_unitario_kwh)));
+                    console.log((parseFloat(energia[energia.length-1]) * parseFloat(preco_unitario_kwh)).toFixed(2));
+                    document.getElementById('consumo_ate_o_momento').textContent = `${energia[energia.length-1]} kWh ou R$${(parseFloat(energia[energia.length-1]) * parseFloat(preco_unitario_kwh)).toFixed(2)}`;
+
+                    var hora_atual = [data.data_e_hora.hora[data.data_e_hora.hora.length - 1], data.data_e_hora.minuto[data.data_e_hora.minuto.length - 1], data.data_e_hora.segundo[data.data_e_hora.segundo.length - 1]];
+                    var hora_atual_formatada = `${hora_atual[0]}:${hora_atual[1]}:${hora_atual[2]}`;
+                    document.getElementById('hora').textContent = hora_atual_formatada;
+
+                    valor_kwh_unitario = data.preco_unitario_kwh;
+                    Consumo_ate_o_momento = parseFloat(data.Consumo_ate_o_momento.kwh);
+                    document.getElementById('valor_kwh_unitario').value = valor_kwh_unitario;
+                    document.getElementById('valor_kwh_unitario_').innerHTML = `R$ ${valor_kwh_unitario}`;
+                    console.log(valor_kwh_unitario);
+
+
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+
+
+        setInterval(recebe_consumo_de_hoje, 2000);
+
+        window.onload = function () {
+            fetchData();
+            recebe_consumo_de_hoje();
+
+        };
+
+
+
+
+
+
+        
+
+
+        function alterar_valor_kwh_unitario() {
+            alert("Desabilitei essa função. se quiser faça manualmente nos arquivos do site.");
+            // var valor_input_kwh = parseFloat(document.getElementById('valor_kwh_unitario').value);
+
+            // if (!isNaN(valor_input_kwh)) {
+            //     fetch('atualiza_valor_kwh.php', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/x-www-form-urlencoded',
+            //         },
+            //         body: `valor_preco_kwh_unitario=${valor_input_kwh}`
+            //     })
+            //         .then(response => response.text())
+            //         .then(data => console.log('Valor enviado com sucesso:', data))
+            //         .catch(error => console.error('Erro ao enviar o valor:', error));
+            // } else {
+            //     console.error('O valor do input não é um número válido.');
+            // }
+            // fetchData();
+        }
+
+
+
+        function resetar_leitura() {
+            alert("Desabilitei essa função. se quiser faça manualmente nos arquivos do site.");
+            // alert("Leitura mensal de kWh foi reiniciada.")
+
+            // if (!isNaN(Consumo_ate_o_momento)) {
+            //     fetch('atualiza_valor_kwh.php', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/x-www-form-urlencoded',
+            //         },
+            //         body: `Consumo_ate_o_momento=${Consumo_ate_o_momento}`
+            //     })
+            //         .then(response => response.text())
+            //         .then(data => console.log('Valor enviado com sucesso:', data))
+            //         .catch(error => console.error('Erro ao enviar o valor:', error));
+            // } else {
+            //     console.error('O valor não é um número válido.');
+            // }
+            // fetchData();
+        }
+
+
+
+
+
+                // var dias = ["Seg. 16/09", "Ter. 17/09", "Qua. 18/09", "Qui. 19/09", "Sex. 20/09", "Sab. 21/09", "Dom. 22/09"];
+        var dias = ["- --/--", "- --/--", "- --/--", "- --/--", "- --/--", "- --/--", "- --/--"];
+        // const energia = ["1,75 kWh", "1,21 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh"];
+        const energia = ["-", "-", "-", "-", "-", "-", "-"];
+        // const custo = ["R$1,99", "R$1,76", "R$1,76", "R$1,76", "R$1,76", "R$1,76", "R$1,76"];
+        const custo = ["-", "-", "-", "-", "-", "-", "-"];
+        // const horasLig = ["5:48 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h"];
+        const horasLig = ["-", "-", "-", "-", "-", "-", "-"];
+
+        function preencherTabela() {
+            const table = document.getElementById('energy-table');
+            const headerRow = table.querySelector("thead tr");
+
+            // Preenche os dias
+            dias.forEach(dia => {
+                const th = document.createElement("th");
+                th.textContent = dia;
+                th.style.padding = "10px";
+                th.style.border = "1px solid #000b3f2b";
+                headerRow.appendChild(th);
+            });
+
+            // Preenche os dados de energia
+            const energiaRow = table.querySelector("tbody tr:nth-child(1)");
+            energia.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                energiaRow.appendChild(td);
+            });
+
+            // Preenche os dados de custo
+            const custoRow = table.querySelector("tbody tr:nth-child(2)");
+            custo.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                custoRow.appendChild(td);
+            });
+
+            // Preenche os dados de horas ligadas
+            const horasLigRow = table.querySelector("tbody tr:nth-child(3)");
+            horasLig.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                horasLigRow.appendChild(td);
+            });
+        }
+
+        // Chama a função ao carregar a página
+        document.addEventListener("DOMContentLoaded", preencherTabela);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const meses = ["Maio", "Junho", "Julho", "Agosto", "Setembro"];
+        // const consumo = [67.44, 67.44, 67.44, 67.44, 67.44];
+        const consumo = ["-", "-", "-", "-", "-"];
+        // var dias_ = [31, 30, 30, 30, 30];
+        var dias_ = ["-", "-", "-", "-", "-"];
+
+        function preencherTabelaConsumo() {
+            const table = document.getElementById('consumption-table');
+            const tbody = table.querySelector("tbody");
+
+            // Preenche os dados de meses
+            meses.forEach((mes, index) => {
+                const tr = document.createElement("tr");
+
+                const tdMes = document.createElement("td");
+                tdMes.textContent = mes;
+                tdMes.style.padding = "10px";
+                tdMes.style.border = "1px solid #000b3f2b";
+                tdMes.style.backgroundColor = "#0400330f";
+                tr.appendChild(tdMes);
+
+                const tdConsumo = document.createElement("td");
+                tdConsumo.textContent = consumo[index];
+                tdConsumo.style.padding = "10px";
+                tdConsumo.style.border = "1px solid #000b3f2b";
+                tr.appendChild(tdConsumo);
+
+                const tdDias = document.createElement("td");
+                tdDias.textContent = dias_[index];
+                tdDias.style.padding = "10px";
+                tdDias.style.border = "1px solid #000b3f2b";
+                tr.appendChild(tdDias);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Chama a função ao carregar a página
+        document.addEventListener("DOMContentLoaded", preencherTabelaConsumo);
+
+
+
+
+
+
+
+        function voltar_a_pagina() {
+            window.location.href = "website2.html";        // Redireciona para a nova página
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Energia</title>
+    <style>
+        /* Fonte importada do Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        /* Background geral */
+        body {
+            background: url('https://monitoramento.x10.bz/Medidor_PZEM/Modelo_da_Tati/cubes.png');
+            background-color: #b4c3de;
+            color: #000000;
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #000b2e;
+            margin-bottom: 20px;
+        }
+
+        /* Efeito de vidro */
+        #sensor-data,
+        .linha>div {
+            background: rgba(255, 255, 255, 0.392);
+            border-radius: 25px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            margin: 10px;
+            backdrop-filter: blur(7px);
+            transition: all 0.1s ease;
+        }
+
+        #sensor-data:hover,
+        .linha>div:hover {
+            /* transform: translateY(-5px); */
+            scale: 1.008;
+            box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.287);
+        }
+
+        #sensor-data {
+            background: #ffffff2f;
+            text-align: left;
+            width: 450px;
+            margin: 0 auto 20px auto;
+            border: 1px solid #00000010;
+            display: flex;
+        }
+
+        /* Estilo das informações */
+        #sensor-data p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: #313131;
+            font-weight: lighter;
+        }
+
+        #sensor-data span {
+            font-weight: bold;
+            color: #000b2e;
+            font-size: 1rem;
+        }
+
+        /* Estilo dos gráficos */
+        .linha {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .linha>div {
+            flex: 1 1 45%;
+            margin: 10px;
+            min-width: 300px;
+            height: 280px;
+            /* Altura fixa dos gráficos */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Estilo da tabela Highcharts */
+        .highcharts-data-table table {
+            background: rgba(255, 255, 255, 0.1);
+            color: #c5c6c7;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highcharts-data-table th {
+            background: #45a29e;
+            color: #fff;
+            padding: 10px;
+            text-transform: uppercase;
+        }
+
+        .highcharts-data-table td {
+            padding: 8px;
+        }
+
+        /* Adicionando uma transição suave */
+        .highcharts-data-table table,
+        .linha>div {
+            transition: all 0.3s ease;
+        }
+
+        .highcharts-data-table table:hover,
+        .linha>div:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .highcharts-background {
+            fill: #ffffff00;
+        }
+
+        .highcharts-button-box {
+            fill: #ffffff00;
+        }
+
+        .highcharts-grid-line {
+            stroke: rgba(0, 0, 0, 0.079);
+        }
+
+        .coluna {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 30;
+        }
+
+        .menu_superior {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .botao {
+            padding: 5px;
+            color: #e2e2e2;
+            background-color: #000b2edd;
+            font-weight: bold;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        .botao:hover {
+            scale: 1.02;
+            background-color: #00001d;
+        }
+
+        .destaque_p {
+            padding: 7px;
+            background-color: #0400330f;
+            border: 1px solid #000b3f2b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #ver_todos {
+            font-size: 12rem;
+            font-weight: lighter;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0000004d;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #ver_todos:hover {
+            background: #ffffff82;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Monitoramento de Energia</h1>
+    <!-- em tempo real -->
+    <div class="menu_superior">
+        <div id="sensor-data" style="height: fit-content;">
+            <div class="coluna">
+                <p>Tensão FN: <span id="tensao_A">0</span> V</p>
+                <p>Corrente: <span id="corrente_A">0</span> A</p>
+                <p>Potência: <span id="potencia_A">0</span> W</p>
+                <p>Frequência: <span id="frequencia_A">0</span> Hz</p>
+                <p>FP: <span id="fp_A">0</span></p>
+            </div>
+            <div style="flex: 1;"></div>
+            <div class="coluna">
+                <p>Tensão FF: <span id="tensao_B">0</span> V</p>
+                <p>Corrente: <span id="corrente_B">0</span> A</p>
+                <p>Potência: <span id="potencia_B">0</span> W</p>
+                <p>Frequência: <span id="frequencia_B">0</span> Hz</p>
+                <p>FP: <span id="fp_B">0</span></p>
+            </div>
+            <div style="flex: 1;"></div>
+            <div class="coluna">
+                <p>Energia: <span id="energia">0</span> kWh</p>
+                <p>Hora: <span id="hora">--:--:--</span></p>
+                <p class="destaque_p">Consumo até o momento: <span id="consumo_ate_o_momento" style="margin-top: 8px;"></span></p>
+                <p class="destaque_p">Hoje: <span id="consumo_hoje" style="margin-top: 8px;"></span></p>
+            </div>
+        </div>
+        
+
+        <!--  -->
+        <div id="sensor-data" style="height: 260px; width: 600px;" onclick="exibir_tabelas()">
+            <table id="energy-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #0400330f;">
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">DIA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">ENERGIA
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">CUSTO</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #000b3f2b; background-color: #0400330f;">HORAS LIG.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!--  -->
+        <div id="sensor-data" style="width: 250px; display: flex; flex-direction: column;" onclick="exibir_tabelas()">
+            <table id="consumption-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #0400330f;">
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">MÊS</th>
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">CONSUMO (kWh)</th>
+                        <th style="padding: 10px; border: 1px solid #000b3f2b;">DIAS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <div class="botao" onclick="resetar_leitura(event)">Reiniciar leitura</div>
+        </div>
+    </div>
+
+
+    <div class="linha">
+        <div id="ver_todos" style="flex: 1;" title="Ver todos os gráficos" onclick="ver_todos_os_graficos()">+</div>
+        <div id="graficoEnergia" style="flex: 200;"></div>
+    </div>
+    <div class="linha">
+        <div id="graficoPotencia"></div>
+    </div>
+
+    <!-- Highcharts Scripts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <!-- Seu código JavaScript permanece o mesmo -->
+    <script>
+        const labels = Array.from({ length: 300 }, (_, i) => i + 1);
+
+        var consumo_hoje;
+        var horas_ligadas_hoje;
+
+        // function recebe_consumo_de_hoje() {
+        //     fetch('Gastos_Consumo_de_hoje.php')
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             consumo_hoje = data.consumo_hoje;
+        //             horas_ligadas_hoje = data.horas_ligado;
+
+        //             document.getElementById('consumo_hoje').innerHTML = `${consumo_hoje.toFixed(2)} kWh<br>R$${(consumo_hoje * parseFloat(preco_unitario_kwh)).toFixed(2)}<br>${horas_ligadas_hoje} horas`;
+        //         })
+        //         .catch(error => console.error('Erro ao obter dados:', error));
+        // }
+
+
+
+
+
+        var preco_unitario_kwh;
+        var DATA_hora_grafico = [];
+        var DATA_hora2_grafico = [];
+        var DATA_dia_grafico = [];
+        function fetchData() {
+            fetch('retorna_ao_site_HOME.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    var tensao_FN = data.tensao_FN;
+                    var tensao_FF = data.tensao_FF;
+                    var corrente_FN = data.corrente_FN;
+                    var corrente_FF = data.corrente_FF;
+                    var potencia_FN = data.potencia_FN;
+                    var potencia_FF = data.potencia_FF;
+                    var frequencia_FN = data.frequencia_FN;
+                    var frequencia_FF = data.frequencia_FF;
+                    var fp_FN = data.fp_FN;
+                    var fp_FF = data.fp_FF;
+                    var energia = data.energia;
+                    preco_unitario_kwh = data.preco_unitario_kwh;
+                    document.getElementById('tensao_A').textContent = tensao_FN[tensao_FN.length - 1];
+                    document.getElementById('tensao_B').textContent = tensao_FF[tensao_FF.length - 1];
+                    document.getElementById('corrente_A').textContent = corrente_FN[corrente_FN.length - 1];
+                    document.getElementById('corrente_B').textContent = corrente_FF[corrente_FF.length - 1];
+                    document.getElementById('potencia_A').textContent = potencia_FN[potencia_FN.length - 1];
+                    document.getElementById('potencia_B').textContent = potencia_FF[potencia_FF.length - 1];
+                    document.getElementById('frequencia_A').textContent = frequencia_FN[frequencia_FN.length - 1];
+                    document.getElementById('frequencia_B').textContent = frequencia_FF[frequencia_FF.length - 1];
+                    document.getElementById('fp_A').textContent = fp_FN[fp_FN.length - 1];
+                    document.getElementById('fp_B').textContent = fp_FF[fp_FF.length - 1];
+                    document.getElementById('energia').textContent = energia[energia.length - 1];
+
+                    document.getElementById('consumo_ate_o_momento').textContent = `${energia[energia.length-1]} kWh ou R$${(parseFloat(energia[energia.length-1]) * parseFloat(preco_unitario_kwh)).toFixed(2)}`;
+
+                    var hora_atual = [data.data_e_hora.hora[data.data_e_hora.hora.length - 1], data.data_e_hora.minuto[data.data_e_hora.minuto.length - 1], data.data_e_hora.segundo[data.data_e_hora.segundo.length - 1]];
+                    var hora_atual_formatada = `${hora_atual[0]}:${hora_atual[1]}:${hora_atual[2]}`;
+                    document.getElementById('hora').textContent = hora_atual_formatada;
+
+
+                    var hora = data.data_e_hora.hora;
+                    var minuto = data.data_e_hora.minuto;
+                    var segundo = data.data_e_hora.segundo;
+                    var dia = data.data_e_hora.dia;
+                    var nome_do_mes = data.data_e_hora.nome_do_mes;
+                    var ano = data.data_e_hora.ano;
+                    DATA_hora_grafico = [];
+                    DATA_hora2_grafico = [];
+                    DATA_dia_grafico = [];
+                    for (let i = 0; i < hora.length; i++) {
+                        DATA_hora_grafico.push(`${hora[i]}:${minuto[i]}`); 
+                        DATA_hora2_grafico.push(`${hora[i]}:${minuto[i]}:${segundo[i]}`); 
+                        DATA_dia_grafico.push(`${dia[i]}/${nome_do_mes[i]}`);                     
+                    }
+
+
+                    var potencia = [];
+                    for (let i = 0; i < potencia_FN.length; i++) {
+                        potencia.push((parseFloat(potencia_FN[i]) + parseFloat(potencia_FF[i])));                  
+                    }
+
+                    if (energia.length >= 6000) {
+                        plot_grafico(energia.slice(energia.length - 6000, energia.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoEnergia');
+                        plot_grafico(potencia.slice(potencia.length - 6000, potencia.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoPotencia');
+                    } else {
+                        plot_grafico(energia, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoEnergia');
+                        plot_grafico(potencia, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoPotencia');
+                    }
+
+
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+
+        
+
+
+
+        setInterval(fetchData, 2000);
+        // setInterval(recebe_consumo_de_hoje, 2000);
+
+        window.onload = function () {
+            fetchData();
+            // recebe_consumo_de_hoje();
+        };
+
+
+
+
+
+
+
+        function plot_grafico(valores, eixoX, eixoX2, eixoX3, id) {
+            var dados;
+            var titulo;
+            var cor;
+            if (id == 'graficoTensao') {
+                dados = [{
+                    name: 'Tensão',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' V'
+                    },
+                }];
+                titulo = 'Tensão (V)';
+                cor = '#D1B42F';
+            }
+
+            if (id == 'graficoCorrente') {
+                dados = [{
+                    name: 'Corrente',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' A'
+                    },
+                }];
+                titulo = 'Corrente (A)';
+                cor = '#28A7AB';
+            }
+
+            if (id == 'graficoEnergia') {
+                dados = [{
+                    name: 'Energia',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' kWh'
+                    },
+                }];
+                titulo = 'Energia (kWh)';
+                cor = '#2BB578';
+            }
+
+            if (id == 'graficoFp') {
+                dados = [{
+                    name: 'Fator de potência',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ''
+                    },
+                }];
+                titulo = 'Fator de Potência';
+                cor = '#84BF2D';
+            }
+
+            if (id == 'graficoPotencia') {
+                dados = [{
+                    name: 'Potência',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' W'
+                    },
+                }];
+                titulo = 'Potência (W)';
+                cor = '#283CAB';
+            }
+
+
+
+
+
+
+            (async () => {
+
+                Highcharts.chart(id, {
+                    chart: {
+                        // zoomType: 'x'
+                    },
+                    title: {
+                        text: titulo,
+                    },
+                    xAxis: {
+                        categories: eixoX,
+                        gridLineWidth: 1,
+                    },
+                    yAxis: {
+                        title: {
+                            text: titulo
+                        },
+                        gridLineWidth: 1,
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            // Mostra a informação de eixoX2 correspondente ao índice do ponto
+                            return `Data: <strong>${eixoX3[this.point.index]}</strong><br>Hora: <strong>${eixoX2[this.point.index]}</strong><br>${this.series.name}: <strong>${this.y}</strong>`;
+                        }
+                    },
+                    plotOptions: {
+                        series: {
+                            animation: false // Desativa a animação para as séries
+                        },   
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, `${cor}ee`],
+                                    [1, `${cor}55`]
+                                ]
+                            },
+                            color: cor,
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+                    series: dados,
+                });
+            })();
+
+
+        }
+
+
+
+
+
+
+
+        // var dias = ["Seg. 16/09", "Ter. 17/09", "Qua. 18/09", "Qui. 19/09", "Sex. 20/09", "Sab. 21/09", "Dom. 22/09"];
+        var dias = ["- --/--", "- --/--", "- --/--", "- --/--", "- --/--", "- --/--", "- --/--"];
+        // const energia = ["1,75 kWh", "1,21 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh", "1,66 kWh"];
+        const energia = ["-", "-", "-", "-", "-", "-", "-"];
+        // const custo = ["R$1,99", "R$1,76", "R$1,76", "R$1,76", "R$1,76", "R$1,76", "R$1,76"];
+        const custo = ["-", "-", "-", "-", "-", "-", "-"];
+        // const horasLig = ["5:48 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h", "4:22 h"];
+        const horasLig = ["-", "-", "-", "-", "-", "-", "-"];
+
+        function preencherTabela() {
+            const table = document.getElementById('energy-table');
+            const headerRow = table.querySelector("thead tr");
+
+            // Preenche os dias
+            dias.forEach(dia => {
+                const th = document.createElement("th");
+                th.textContent = dia;
+                th.style.padding = "10px";
+                th.style.border = "1px solid #000b3f2b";
+                headerRow.appendChild(th);
+            });
+
+            // Preenche os dados de energia
+            const energiaRow = table.querySelector("tbody tr:nth-child(1)");
+            energia.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                energiaRow.appendChild(td);
+            });
+
+            // Preenche os dados de custo
+            const custoRow = table.querySelector("tbody tr:nth-child(2)");
+            custo.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                custoRow.appendChild(td);
+            });
+
+            // Preenche os dados de horas ligadas
+            const horasLigRow = table.querySelector("tbody tr:nth-child(3)");
+            horasLig.forEach(valor => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                td.style.padding = "10px";
+                td.style.border = "1px solid #000b3f2b";
+                horasLigRow.appendChild(td);
+            });
+        }
+
+        // Chama a função ao carregar a página
+        document.addEventListener("DOMContentLoaded", preencherTabela);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const meses = ["Maio", "Junho", "Julho", "Agosto", "Setembro"];
+        // const consumo = [67.44, 67.44, 67.44, 67.44, 67.44];
+        const consumo = ["-", "-", "-", "-", "-"];
+        // var dias_ = [31, 30, 30, 30, 30];
+        var dias_ = ["-", "-", "-", "-", "-"];
+
+        function preencherTabelaConsumo() {
+            const table = document.getElementById('consumption-table');
+            const tbody = table.querySelector("tbody");
+
+            // Preenche os dados de meses
+            meses.forEach((mes, index) => {
+                const tr = document.createElement("tr");
+
+                const tdMes = document.createElement("td");
+                tdMes.textContent = mes;
+                tdMes.style.padding = "10px";
+                tdMes.style.border = "1px solid #000b3f2b";
+                tdMes.style.backgroundColor = "#0400330f";
+                tr.appendChild(tdMes);
+
+                const tdConsumo = document.createElement("td");
+                tdConsumo.textContent = consumo[index];
+                tdConsumo.style.padding = "10px";
+                tdConsumo.style.border = "1px solid #000b3f2b";
+                tr.appendChild(tdConsumo);
+
+                const tdDias = document.createElement("td");
+                tdDias.textContent = dias_[index];
+                tdDias.style.padding = "10px";
+                tdDias.style.border = "1px solid #000b3f2b";
+                tr.appendChild(tdDias);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Chama a função ao carregar a página
+        document.addEventListener("DOMContentLoaded", preencherTabelaConsumo);
+
+
+        
+
+
+        function ver_todos_os_graficos() {
+            window.location.href = "todos_os_graficos.html";        // Redireciona para a nova página
+        }
+
+        function exibir_tabelas() {
+            window.location.href = "tabelas_de_consumo.html";        // Redireciona para a nova página
+        }
+
+
+
+        function resetar_leitura(event) {
+            alert("Desabilitei essa função. se quiser faça manualmente nos arquivos do site.");
+            // event.stopPropagation(); // Impede que o clique propague para o elemento da tabela
+            // alert("Leitura mensal de kWh foi reiniciada.")
+
+            // if (!isNaN(Consumo_ate_o_momento)) {
+            //     fetch('atualiza_valor_kwh.php', {
+            //         method: 'POST',
+            //         headers: {
+            //             'Content-Type': 'application/x-www-form-urlencoded',
+            //         },
+            //         body: `Consumo_ate_o_momento=${Consumo_ate_o_momento}`
+            //     })
+            //         .then(response => response.text())
+            //         .then(data => console.log('Valor enviado com sucesso:', data))
+            //         .catch(error => console.error('Erro ao enviar o valor:', error));
+            // } else {
+            //     console.error('O valor não é um número válido.');
+            // }
+            // fetchData();
+        }
+
+
+
+    </script>
+</body>
+
+</html>
