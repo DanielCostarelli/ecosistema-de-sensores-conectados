@@ -1,0 +1,11 @@
+O código que está no ESP é o ESP_que_controla_o_motor_da_piscina.ino, que recebe o horário atualizado e armazena na sua memória interna, junto com os inputs. E a cada intervalo de tempo Acessa o endereço do servidor para se comunicar novamente. Se ele consegue se comunicar, ele recebe a resposta e decide se é hora de acionar ou não o motor. Se ele não consegue se comunicar com o servidor, ele usa seu relógio interno (com a ultima hora armazenada + o delay) para se basear no seu funcionamento.
+
+O analisar_JSON.ino é um código exemplo, que converte as chaves de um JSON em variaveis comuns.
+
+O grava_na_memoria_flash.ino é um código exemplo, que armazena uma string na memória EEPROM do ESP.
+
+O le_a_memoria_flash.ino é um código exemplo, que recebe o conteudo armazenado na memória, e converte em uma string.
+
+O ligar_led.ino apenas liga e desliga o LED embutido na placa do ESP, e aciona o relé.
+
+O tenta_conectar_em_3_redes_wifi.ino é um código exemplo, que tenta se conectar ao wifi por meio de 3 redes já cadastradas. Caso não consiga na primeira ele tenta na segunda, ou na terceira rede, tendo sempre uma rede wifi reserva caso a principal falhe.
