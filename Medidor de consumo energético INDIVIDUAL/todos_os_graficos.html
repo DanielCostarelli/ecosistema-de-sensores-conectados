@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Energia</title>
+    <link rel="icon" type="image/png" href="icone.png">
+        
+    <style>
+        
+
+        /* Estilo da tabela Highcharts */
+        .highcharts-data-table table {
+            background: rgba(255, 255, 255, 0.1);
+            color: #c5c6c7;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highcharts-data-table th {
+            background: #45a29e;
+            color: #fff;
+            padding: 10px;
+            text-transform: uppercase;
+        }
+
+        .highcharts-data-table td {
+            padding: 8px;
+        }
+
+        /* Adicionando uma transição suave */
+        .highcharts-data-table table,
+        .linha>div {
+            transition: all 0.3s ease;
+        }
+
+        .highcharts-background {
+            fill: #ffffff00;
+        }
+
+        .highcharts-button-box {
+            fill: #ffffff00;
+        }
+
+        .highcharts-grid-line {
+            stroke: rgba(0, 0, 0, 0.079);
+        }
+
+
+
+
+        /* Fonte importada do Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        /* Background geral */
+        body {
+            background: url('https://monitoramento.x10.bz/Medidor_PZEM/Modelo_da_Tati/cubes.png');
+            background-color: #b4c3de;
+            color: #000000;
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Efeito de vidro */
+        
+
+        /* Estilo dos gráficos */
+        .linha {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            height: 450px;
+            flex-direction: column;
+        }
+
+        .linha>div {
+            flex: 1 1 45%;
+            margin: 10px;
+            min-width: 300px;
+            height: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff64;
+            border-radius: 25px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            backdrop-filter: blur(7px);
+            transition: all 0.1s ease;
+        }
+
+        .linha>div:hover {
+            background: #ffffff80;
+        }
+
+
+
+
+        /* .botao {
+            padding: 5px;
+            color: #e2e2e2;
+            background-color: #000b2edd;
+            font-weight: bold;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        .botao:hover {
+            scale: 1.02;
+            background-color: #00001d;
+        } */
+
+        /* .destaque_p {
+            padding: 7px;
+            background-color: #0400330f;
+            border: 1px solid #000b3f2b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        } */
+
+        .voltar {
+            font-size: 1.1rem;
+            font-weight: bolder;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 15px;
+            border: 1px solid #ffffff33;
+            background-color: #ffffff64;
+            border-radius: 20px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(7px);
+            margin-bottom: 70px;
+            width: 140px;
+        }
+
+        .voltar:hover {
+            background-color: #ffffff82;
+            scale: 1.05;
+        }
+
+        .mudar_escala, .ultimo_valor {
+            padding: 5px;
+            padding-top: 9px;
+            padding-bottom: 9px;
+            width: 170px;
+            font-size: 0.8rem;
+            font-weight: bolder;
+            display: flex;
+            justify-content: center;
+            color: #d5d5d5;
+            background-color: #000b2edd;
+            border-radius: 12px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(7px);
+            margin-bottom: -4px;
+            margin-left: 10px;
+            
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mudar_escala:hover {
+            background-color: #00001d;
+            scale: 1.01;
+        }
+
+        header {
+            display: flex;
+        }
+
+        .ultimo_valor {
+            background-color: #00043e1c;
+            border: 1px solid #000b3f66;
+            cursor: default;
+            color: #000b2edd;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div class="voltar" title="Voltar à página anterior" onclick="voltar_a_pagina()">VOLTAR</div>
+
+
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoEnergia', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoEnergia', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoEnergia', '30 dias +')">30 DIAS</div>
+            <div class="ultimo_valor" id="energia"></div>
+        </header>
+        <div id="graficoEnergia"></div>
+    </div>
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoPotencia', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoPotencia', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoPotencia', '30 dias +')">30 DIAS</div>
+            <div class="ultimo_valor" id="potencia"></div>
+        </header>
+        <div id="graficoPotencia"></div>
+    </div>
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoCorrente', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoCorrente', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoCorrente', '30 dias +')">30 DIAS</div>
+            <div class="ultimo_valor" id="corrente"></div>
+        </header>
+        <div id="graficoCorrente"></div>
+    </div>
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFp', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFp', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFp', '30 dias +')">30 DIAS</div>
+            <div class="ultimo_valor" id="fp"></div>
+        </header>
+        <div id="graficoFp"></div>
+    </div>
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoTensao', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoTensao', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoTensao', '30 dias +')">30 DIAS</div>
+            <div class="mudar_escala" onclick="desloca_senoide()">ONDA SENOIDAL</div>
+            <div class="ultimo_valor" id="tensao"></div>
+        </header>
+        <div id="graficoTensao"></div>
+    </div>
+    <div class="linha">
+        <header>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFrequencia', 'ultimas horas')">ULTIMAS HORAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFrequencia', 'ultimos dias')">ULTIMOS DIAS</div>
+            <div class="mudar_escala" onclick="mudar_escala_grafico('graficoFrequencia', '30 dias +')">30 DIAS</div>
+            <div class="ultimo_valor" id="frequencia"></div>
+        </header>
+        <div id="graficoFrequencia"></div>
+    </div>
+
+
+    <!-- Highcharts Scripts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+
+    <script>
+        // const labels = Array.from({ length: 300 }, (_, i) => i + 1);
+
+
+
+        var DATA_hora_grafico = [];
+        var DATA_hora2_grafico = [];
+        var DATA_dia_grafico = [];
+        var tensao;
+        var corrente;
+        var potencia;
+        var energia;
+        var frequencia;
+        var fp;
+        function fetchData() {
+            fetch('retorna_ao_site.php')
+                .then(response => response.json())
+                .then(data => {
+                    tensao = data.tensao;
+                    corrente = data.corrente;
+                    potencia = data.potencia;
+                    energia = data.energia;
+                    frequencia = data.frequencia;
+                    fp = data.fp;
+
+                    document.getElementById('tensao').textContent = tensao[tensao.length - 1] + ' V';
+                    document.getElementById('corrente').textContent = corrente[corrente.length - 1] + ' A';
+                    document.getElementById('potencia').textContent = potencia[potencia.length - 1] + ' W';
+                    document.getElementById('energia').textContent = energia[energia.length - 1] + ' kWh';
+                    document.getElementById('frequencia').textContent = frequencia[frequencia.length - 1] + ' Hz';
+                    document.getElementById('fp').textContent = fp[fp.length - 1];
+
+
+
+                    // CARREGA OS GRAFICOS DAS ULTIMAS HORAS (primeira escala)
+
+                    var hora = data.data_e_hora.hora;
+                    var minuto = data.data_e_hora.minuto;
+                    var segundo = data.data_e_hora.segundo;
+                    var dia = data.data_e_hora.dia;
+                    var nome_do_mes = data.data_e_hora.nome_do_mes;
+                    var ano = data.data_e_hora.ano;
+                    DATA_hora_grafico = [];
+                    DATA_hora2_grafico = [];
+                    DATA_dia_grafico = [];
+                    for (let i = 0; i < ano.length; i++) {
+                        DATA_hora_grafico.push(`${hora[i]}:${minuto[i]}`); 
+                        DATA_hora2_grafico.push(`${hora[i]}:${minuto[i]}:${segundo[i]}`); 
+                        DATA_dia_grafico.push(`${dia[i]}/${nome_do_mes[i]}`);                     
+                    }
+
+// plot_grafico(corrente, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoCorrente');
+
+                    if (energia.length >= 6000) {
+                        
+                        
+
+                        
+                        plot_grafico(corrente.slice(corrente.length - 6000, corrente.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoCorrente');
+                        plot_grafico(potencia.slice(potencia.length - 6000, potencia.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoPotencia');
+                        plot_grafico(fp.slice(fp.length - 6000, fp.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoFp');
+                        plot_grafico(energia.slice(energia.length - 6000, energia.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoEnergia');
+                        plot_grafico(tensao.slice(tensao.length - 6000, tensao.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoTensao');
+                        plot_grafico(frequencia.slice(frequencia.length - 6000, frequencia.length - 1), DATA_hora_grafico.slice(DATA_hora_grafico.length - 6000, DATA_hora_grafico.length - 1), DATA_hora2_grafico.slice(DATA_hora2_grafico.length - 6000, DATA_hora2_grafico.length - 1), DATA_dia_grafico.slice(DATA_dia_grafico.length - 6000, DATA_dia_grafico.length - 1), 'graficoFrequencia');
+                    } else {
+                        plot_grafico(corrente, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoCorrente');
+                        plot_grafico(potencia, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoPotencia');
+                        plot_grafico(fp, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoFp');
+                        plot_grafico(energia, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoEnergia');
+                        plot_grafico(tensao, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoTensao');
+                        plot_grafico(frequencia, DATA_hora_grafico, DATA_hora2_grafico, DATA_dia_grafico, 'graficoFrequencia');
+                    }
+
+
+                })
+                .catch(error => console.error('Erro ao obter dados:', error));
+        }
+
+
+
+
+        window.onload = function () {
+            fetchData();
+
+        };
+
+
+
+
+
+
+
+        function plot_grafico(valores, eixoX, eixoX2, eixoX3, id) {
+            var dados;
+            var titulo;
+            var cor;
+            if (id == 'graficoTensao') {
+                dados = [{
+                    name: 'Tensão',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' V'
+                    },
+                }];
+                titulo = 'Tensão (V)';
+                cor = '#D1B42F';
+            }
+
+            if (id == 'graficoCorrente') {
+                dados = [{
+                    name: 'Corrente',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' A'
+                    },
+                }];
+                titulo = 'Corrente (A)';
+                cor = '#28A7AB';
+            }
+
+            if (id == 'graficoPotencia') {
+                dados = [{
+                    name: 'Potência',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' W'
+                    },
+                }];
+                titulo = 'Potência (W)';
+                cor = '#283CAB';
+            }
+
+            if (id == 'graficoEnergia') {
+                dados = [{
+                    name: 'Energia',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' kWh'
+                    },
+                }];
+                titulo = 'Energia (kWh)';
+                cor = '#2BB578';
+            }
+
+            if (id == 'graficoFp') {
+                dados = [{
+                    name: 'Fator de potência',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ''
+                    },
+                }];
+                titulo = 'Fator de Potência';
+                cor = '#AAD632';
+            }
+
+            if (id == 'graficoFrequencia') {
+                dados = [{
+                    name: 'Frequência',
+                    type: 'area',
+                    data: valores,
+                    tooltip: {
+                        valueSuffix: ' hz'
+                    },
+                }];
+                titulo = 'Frequência (hz)';
+                cor = '#DE4242';
+            }
+
+
+
+
+
+
+            (async () => {
+
+                Highcharts.chart(id, {
+                    chart: {
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: titulo,
+                    },
+                    xAxis: {
+                        categories: eixoX,
+                        gridLineWidth: 1,
+                    },
+                    yAxis: {
+                        title: {
+                            text: titulo
+                        },
+                        gridLineWidth: 1,
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        formatter: function () {
+                            // Mostra a informação de eixoX2 correspondente ao índice do ponto
+                            return `Data: <strong>${eixoX3[this.point.index]}</strong><br>Hora: <strong>${eixoX2[this.point.index]}</strong><br>${this.series.name}: <strong>${this.y}</strong>`;
+                        }
+                    },
+                    plotOptions: {
+                        series: {
+                            animation: false // Desativa a animação para as séries
+                        },   
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, `${cor}ee`],
+                                    [1, `${cor}55`]
+                                ]
+                            },
+                            color: cor,
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+                    series: dados,
+                });
+            })();
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+        function mudar_escala_grafico(id, escala) {
+            // fetchData();
+            
+            // habilita_deslocamento = false;
+            // ccc = false;
+            // desloca_senoide();
+
+            var lista_dados = [];
+            var lista_DATA_hora_grafico = DATA_hora_grafico;
+            var lista_DATA_hora2_grafico = DATA_hora2_grafico;
+            var lista_DATA_dia_grafico = DATA_dia_grafico;
+            // var lista_DATA_hora_grafico = [];
+            // var lista_DATA_hora2_grafico = [];
+            // var lista_DATA_dia_grafico = [];
+
+            if (id == 'graficoCorrente') {lista_dados = corrente;}
+            if (id == 'graficoPotencia') {lista_dados = potencia;}
+            if (id == 'graficoFp') {lista_dados = fp;}
+            if (id == 'graficoEnergia') {lista_dados = energia;}
+            if (id == 'graficoTensao') {lista_dados = tensao; clearInterval(intervaloDeslocamento); habilita_deslocamento = false;}
+            if (id == 'graficoFrequencia') {lista_dados = frequencia;}
+
+            if (escala == 'ultimas horas') {
+                lista_dados = lista_dados;
+                lista_DATA_hora_grafico = lista_DATA_hora_grafico;
+                lista_DATA_hora2_grafico = lista_DATA_hora2_grafico;
+                lista_DATA_dia_grafico = lista_DATA_dia_grafico;
+            }
+            if (escala == 'ultimos dias') {
+                lista_dados = filtro(lista_dados, 6);
+                lista_DATA_hora_grafico = filtro(lista_DATA_hora_grafico, 6);
+                lista_DATA_hora2_grafico = filtro(lista_DATA_hora2_grafico, 6);
+                lista_DATA_dia_grafico = filtro(lista_DATA_dia_grafico, 6);
+            }
+            if (escala == '30 dias +') {
+                lista_dados = filtro(lista_dados, 48);
+                lista_DATA_hora_grafico = filtro(lista_DATA_hora_grafico, 48);
+                lista_DATA_hora2_grafico = filtro(lista_DATA_hora2_grafico, 48);
+                lista_DATA_dia_grafico = filtro(lista_DATA_dia_grafico, 48);
+            }
+
+
+            if (lista_dados.length >= 6000) {
+                lista_dados = lista_dados.slice(lista_dados.length - 6000, lista_dados.length - 1);
+                lista_DATA_hora_grafico = lista_DATA_hora_grafico.slice(lista_DATA_hora_grafico.length - 6000, lista_DATA_hora_grafico.length - 1);
+                lista_DATA_hora2_grafico = lista_DATA_hora2_grafico.slice(lista_DATA_hora2_grafico.length - 6000, lista_DATA_hora2_grafico.length - 1);
+                lista_DATA_dia_grafico = lista_DATA_dia_grafico.slice(lista_DATA_dia_grafico.length - 6000, lista_DATA_dia_grafico.length - 1);
+            }
+
+
+            plot_grafico(lista_dados, lista_DATA_hora_grafico, lista_DATA_hora2_grafico, lista_DATA_dia_grafico, id);
+        }
+
+
+
+
+
+        function filtro(listaOriginal, maxItensPorGrupo) {
+            var grupO = [];
+            var copiaDaListaOriginal = listaOriginal.slice(); // Faz uma cópia da lista original
+            var numeroDeGrupos = Math.ceil(copiaDaListaOriginal.length / maxItensPorGrupo);
+            var itensExtras = copiaDaListaOriginal.length % maxItensPorGrupo;
+            if (itensExtras != 0) {
+                for (var i = 0; i < itensExtras; i++) { 
+                    grupO.push(copiaDaListaOriginal[copiaDaListaOriginal.length - i]);
+                    grupO.reverse(); 
+                } 
+                for (var i=0; i < itensExtras; i++) { 
+                    copiaDaListaOriginal.pop(); 
+                } 
+            } 
+            var sublistas=[]; 
+            for (var i=0; i < copiaDaListaOriginal.length; i +=maxItensPorGrupo) { 
+                sublistas.push(copiaDaListaOriginal.slice(i, i + maxItensPorGrupo)); 
+            } 
+            if (itensExtras !=0) { sublistas.push(grupO); } 
+            
+            console.log(sublistas);
+
+            var new_list = [];
+            for (var i = 0; i <= sublistas.length; i++) {
+                if (sublistas[i] && sublistas[i].length > 0) {
+                    new_list.push(sublistas[i][sublistas[i].length - 1]);
+                }
+            }
+
+            
+            console.log(new_list);
+            console.log('');
+
+            return new_list
+        }
+
+
+
+
+
+
+
+        var desloca_pelo_tempo = 0;
+        var intervaloDeslocamento;
+        var habilita_deslocamento = false;
+        // var ccc = true;
+        function desloca_senoide() {
+            habilita_deslocamento = !habilita_deslocamento;
+
+            if (habilita_deslocamento) {
+                ccc = true;
+                intervaloDeslocamento = setInterval(grafico_onda_senoidal, 20);
+            } else {
+                clearInterval(intervaloDeslocamento);
+            }
+        }
+
+
+        function grafico_onda_senoidal() {
+            const amplitude = (tensao[tensao.length - 1] / Math.sqrt(3)) * Math.sqrt(2);    // 127 * raiz de 2
+            const pontos = 50;                             // Número de pontos para a senoide
+            const periodoCompleto = 2 * Math.PI;            // 360 graus em radianos
+            const defasagem = (120 * Math.PI) / 180;        // 120 graus em radianos
+
+            let valoresX = [];
+            let senoide1 = [];
+            let senoide2 = [];
+            let v_pico = [];
+            let v_eficaz = [];
+
+            for (let i = 0; i <= 6 * periodoCompleto; i += periodoCompleto / pontos) {
+                valoresX.push(((1 * i) / (60 * 2 * Math.PI)).toFixed(2));      // Convertendo para período (ciclos) no eixo X
+                senoide1.push(amplitude * Math.sin(i + ((desloca_pelo_tempo * 5 * Math.PI) / 180)));
+                senoide2.push(amplitude * Math.sin(i + defasagem + ((desloca_pelo_tempo * 5 * Math.PI) / 180)));
+                v_pico.push(amplitude);
+                v_eficaz.push(tensao[tensao.length - 1] / Math.sqrt(3));
+            }
+
+            // Configuração dos dados para o gráfico
+            Highcharts.chart('graficoTensao', {
+                chart: {
+                    // zoomType: 'x'
+                },
+                title: {
+                    text: `v(t) = ${amplitude.toFixed(1)}sen(2π${frequencia[frequencia.length - 1]}t + θ) V`
+                },
+                xAxis: {
+                    categories: valoresX,
+                    gridLineWidth: 1,
+                    title: {
+                        text: 'Tempo (segundos)'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Tensão (V)'
+                    },
+                    gridLineWidth: 1
+                },
+                legend: {
+                    enabled: true
+                },
+                tooltip: {
+                    shared: true,
+                    formatter: function () {
+                        let tooltipContent = '';
+                        this.points.forEach(point => {
+                            tooltipContent += `${point.series.name}: <strong>${point.y.toFixed(2)} V</strong><br>`;
+                        });
+                        return tooltipContent;
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        animation: false
+                    },
+                    line: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [{
+                    name: `Vpico (${v_pico[0].toFixed(1)} V)`,
+                    data: v_pico,
+                    color: '#A3A3A3',
+                    type: 'line',
+                    dashStyle: 'Dash' // Outras opções: 'ShortDash', 'ShortDot', 'ShortDashDot', 'Dot', etc.
+                },{
+                    name: `Vrms (${v_eficaz[0].toFixed(1)} V)`,
+                    data: v_eficaz,
+                    color: '#A3A3A3',
+                    type: 'line',
+                    dashStyle: 'ShortDash' // Outras opções: 'ShortDash', 'ShortDot', 'ShortDashDot', 'Dot', etc.
+                }, {
+                    name: `Fase A (${senoide1[0].toFixed(1)} V)`,
+                    data: senoide1,
+                    color: '#DB2A3A',
+                    type: 'line'
+                }, {
+                    name: `Fase B (${senoide2[0].toFixed(1)} V)`,
+                    data: senoide2,
+                    color: '#3E42C4',
+                    type: 'line'
+                }]
+            });
+
+
+
+            desloca_pelo_tempo += 1;
+            if (desloca_pelo_tempo >= 72) {
+                desloca_pelo_tempo = 0;
+            }
+        }
+
+
+
+
+
+
+        function voltar_a_pagina() {
+            window.location.href = "website2.html";        // Redireciona para a nova página
+        }
+
+    </script>
+</body>
+
+</html>
