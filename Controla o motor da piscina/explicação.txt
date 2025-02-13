@@ -1,5 +1,7 @@
 O website.html é a interface, nela o usuário visualiza o status do motor, e também vê a ultima vez que o dispositivo esteve sincronizado com a internet, além de controlar por meio de checkbox o horário de atuação do relé que controlará o motor.
 Nessa interface há a sincronização dos dados enviados/lidos pelo ESP8266. Essa sincronização é feita pelo retorna_ao_site.php, que lê o registro de informações Registro.json.
+
 O usuário também pode alterar os inputs de checkbox e salvar. O salvamento é feito pelo grava_alteracoes.php que altera os inputs no Registro.json.
 Enquanto isso, o ESP8266 acessa o endereço do arquivo comunicacao_com_esp.php, com o valor de algumas variaveis. Esse arquivo serve de comunicação pois recebe as variaveis (status e temperatura da água) do ESP, e acessa o outro arquivo obtem_data_e_hora.php para obter o horário atualizado, e então armazena o horário, temperatura, status e input no Registro.json. E então responde ao esp o horário atualizado e os inputs.
+
 O ESP tem o seu código ESP_que_controla_o_motor_da_piscina.ino, dentro da pasta, que recebe o horário atualizado e armazena na sua memória interna, junto com os inputs. E a cada intervalo de tempo Acessa o endereço do servidor para se comunicar novamente. Se ele consegue se comunicar, ele recebe a resposta e decide se é hora de acionar ou não o motor. Se ele não consegue se comunicar com o servidor, ele usa seu relógio interno (com a ultima hora armazenada + o delay) para se basear no seu funcionamento.
