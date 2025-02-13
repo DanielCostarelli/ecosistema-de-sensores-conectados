@@ -1,0 +1,4 @@
+É basicamente tudo igual ao INDIVIDUAL. Porém tudo com 2 vezes a quantidade de tensão, corrente, potencia, energia, FP e frequência.
+Tem todas as páginas vizinhas parecidas com o medidor individual, mas a tabela de consumo da semana e mes não funciona.
+
+É o código que foi usado por 1 mes na minha residencia, porém não ta tão redondinho/polido quanto ao individual.
