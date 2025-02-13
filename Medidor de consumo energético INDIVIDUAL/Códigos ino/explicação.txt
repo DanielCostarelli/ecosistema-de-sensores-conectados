@@ -1,0 +1,5 @@
+codigo_usado.ino é o código que está no ESP8266. Nele, por meio do módulo PZEM, ele obtem a tensão, corrente, potência ativa, fator de potencia, frequencia e energia gasta pelo dispositivo que está sendo mensurado.
+Ele acessa o endereço do arquivo responde_o_esp.php e envia as variaveis, (que armazena as variaveis e a hora da medição).
+Ele faz isso em loop a aproximadamente cada 10 segundos.
+
+ESP_PZEM.ino é o código que apenas lê os sensores do módulo PZEM, e imprime no monitor serial.
