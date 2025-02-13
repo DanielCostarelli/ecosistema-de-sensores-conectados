@@ -1,0 +1,10 @@
+1_PZEM.ino é o código que permite escolher entre o PZEM A ou o B, e monitorar individualmente, apenas exibindo os valores no monitor serial.
+
+2_PZEM.ino é o código que lê ambos os PZEM, mostrando ambos no serial.
+
+ESP8266_com_2_medidores_PZEM_TCC.ino é o código que foi usado no monitoramento remoto. Nele, ele lê ambos os PZEM e acessa o arquivo responde_o_esp.php com as variaveis. Assim o arquivo armazena elas, junto com o horário.
+Ele faz isso em loop, a aproximadamente cada 10 segundos.
+
+controla_o_led.ino controla basicamente o LED, pois futuramente irá piscar com uma determinada animação para cada ocasião do dispositivo.
+
+Calibracao_temperatura.ino é o código que regula o sensor de temperatura, para acoplar ao dispositivo medidor.
