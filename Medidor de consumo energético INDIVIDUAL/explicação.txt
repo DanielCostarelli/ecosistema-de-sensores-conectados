@@ -1,0 +1,21 @@
+website2.html é a interface principal (HOME), que mostra as grandezas elétricas da ultima medição. Também mostra o consumo dos 3 ultimos dias, e um gráfico da potencia consumida na tomada conectada.
+A HOME acessa o arquivo retorna_ao_site_HOME.php, que retorna os valores da ultima medição.
+A HOME também acessa o arquivo gasto_consumo_total.php que retorna o consumo de hoje e ao longo dos dias passados, para exibi-los na tabela.
+
+É possivel ver uma tabela com o consumo de todos os dias que esteve conectada, clicando na tabela da HOME, que direciona ao arquivo tabelas_de_consumo.html.
+Nessa página de tabela contém o consumo de todos os dias em que o medidor esteve conectado.
+Essa página também acessa o arquivo gasto_consumo_total.php que retorna o consumo de hoje e ao longo dos dias passados, para exibi-los na tabela.
+E também acessa o retorna_ao_site_HOME.php, para usar apenas o preço do kWh de energia.
+
+Também é possivel ver uma página com todos os gráficos das variaveis, com o registro de medições ao longo do tempo.
+Essa página acessa o arquivo retorna_ao_site.php, para receber todos os valores armazenados.
+
+Em geral, o arquivo retorna_ao_site.php e retorna_ao_site_HOME.php tem a mesma função, que é acessar o arquivo Registro.JSON, e retornar um objeto com todas as chaves.
+A diferença é que o de home retorna uma qunatidade menor de dados, e é mais rapida e leve. Enquanto isso o outro retorna todos os dados.
+
+Registro.JSON contém chaves para todas as grandezas elétricas, para a data da medição, e também para o preço do kWh.
+
+responde_o_esp.php recebe do ESP8266 as variaveis elétricas, e acessa o obtem_data_e_hora.php para obter a data atualizada da medição. E então ele acessa o Registro.JSON para inserir a medição.
+E então ele responde ao ESP o horário.
+
+Há também algumas imagens com um padrão usado no fundo do site, e o icone da guia.
